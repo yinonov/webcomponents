@@ -1,0 +1,119 @@
+<template id="store-product-tmpl">
+    <style>
+        :host {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 150px;
+            height: 300px;
+            border-radius: 8px;
+            border: 2px solid #c1c1c1;
+            background: cornsilk;
+            overflow: hidden;
+        }
+
+        :host:not([visible]) {
+            display: none;
+        }
+
+        :host>img {
+            max-width: 5px;
+        }
+
+        :host>.details {
+            flex: 1 1 auto;
+        }
+
+        :host>#close {
+            cursor: pointer;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+        }
+    </style>
+
+    <!--<h3 slot="title">Hey there</h3>-->
+    <span id="close">[X]</span>
+    <slot name="img">Product's img url</slot>
+    <div class="details">
+        <h3 class="name">
+            <slot name="name">Product's name</slot>
+        </h3>
+        <p class="description">
+            <slot name="description">Product's description</slot>
+        </p>
+    </div>
+    <button>Buy <span></span></button>
+</template>
+
+<script>
+    (function () {
+        const thisImportDoc = document.currentScript.ownerDocument;
+
+        class StoreProduct extends HTMLElement {
+            constructor() {
+                super();
+            }
+
+            static get observedAttributes() {
+                return ["visible"];
+            }
+
+            static get template() {
+                if (!this._template) {
+                    this._template = thisImportDoc.querySelector('#store-product-tmpl');
+                }
+                return this._template;
+            }
+
+            connectedCallback() {
+                console.log(1);
+
+                this.visible = this.hasAttribute('visible');
+
+                let shadowRoot = this.attachShadow({
+                    mode: 'open'
+                });
+                let tmpl = StoreProduct.template;
+                shadowRoot.appendChild(document.importNode(tmpl.content, true));
+
+                // If the browser doesn't natively support ShadowDOM, we have
+                // to polyfill the styling mechanism for the component
+                const supportNativeShadowDOM = !!HTMLElement.prototype.attachShadow;
+                if (!supportNativeShadowDOM) {
+                    ShadyCSS.applyStyle(this);
+                }
+            }
+
+            disconnectedCallback() {
+                console.log(2);
+            }
+
+            adoptedCallback() {
+                console.log(3);
+            }
+
+            attributeChangedCallback() {
+                console.log(4);
+            }
+
+            get visible() {
+                return this.hasAttribute('visible');
+            }
+
+            set visible(val) {
+                if (val) {
+                    this.setAttribute('visible', '');
+                } else {
+                    this.removeAttribute('visible');
+                }
+            }
+
+        };
+
+        customElements.define('store-product', StoreProduct);
+
+        // const tmplNode = thisImportDoc.querySelector('#store-product-tmpl');
+        // document.body.appendChild(tmplNode.cloneNode(true));
+    })();
+</script>
